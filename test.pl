@@ -8,6 +8,7 @@
 
 BEGIN { $| = 1; print "1..1\n"; }
 END {print "not ok 1\n" unless $loaded;}
+require CGI::Session;
 use CGI::Session::Serialize::Base64;
 $loaded = 1;
 print "ok 1\n";
