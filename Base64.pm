@@ -1,38 +1,51 @@
 package CGI::Session::Serialize::Base64;
 
-require 5.005_62;
 use strict;
 use warnings;
+use Safe;
+use MIME::Base64;
+use Data::Dumper;
 
-require Exporter;
-use AutoLoader qw(AUTOLOAD);
+use vars qw($VERSION);
 
-our @ISA = qw(Exporter);
-
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use CGI::Session::Serialize::Base64 ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-	
-) ] );
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw(
-	
-);
-our $VERSION = '0.01';
+($VERSION) = '$Revision: 0.1 $' =~ m/Revision:\s*(\S+)/;
 
 
-# Preloaded methods go here.
+sub freeze {
+    my ($self, $data) = @_;
 
-# Autoload methods go after =cut, and are processed by the autosplit program.
+    local $Data::Dumper::Indent   = 0;
+    local $Data::Dumper::Purity   = 0;
+    local $Data::Dumper::Useqq    = 1;
+    local $Data::Dumper::Deepcopy = 0;
+
+    my $d = new Data::Dumper([$data], ["D"]);
+    return encode_base64($d->Dump());
+}
+
+
+
+sub thaw {
+    my ($self, $Estring) = @_;
+
+    my $string = decode_base64($Estring);
+
+    # To make -T happy
+    my ($safe_string) = $string =~ m/^(.*)$/;
+
+    my $D = undef;
+    my $cpt = new Safe();
+    $D = $cpt->reval ($safe_string );
+    if ( $@ ) {
+        die $@;
+    }
+
+    return $D;
+}
+
 
 1;
+
 __END__
 # Below is stub documentation for your module. You better edit it!
 
